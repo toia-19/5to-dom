@@ -186,7 +186,15 @@ function crearTarjeta(tarjetaParametro) {
     }
   });
 
-  acciones.append(botonEditar, botonEliminar);
+  /* VER MÁS */
+  let botonVerMas = document.createElement("button");
+  botonVerMas.textContent = "Ver Más";
+  botonVerMas.classList.add("btn-verMas");
+  botonVerMas.addEventListener("click", () => {
+    verMasInfo(tarjetaParametro);
+  });
+
+  acciones.append(botonEditar, botonEliminar, botonVerMas);
 
   tarjeta.appendChild(listaTarjetas);
 
@@ -194,6 +202,126 @@ function crearTarjeta(tarjetaParametro) {
 
   return tarjeta;
 }
+
+function verMasInfo(datoTarjeta) {
+  /* 
+    window.open -> abre una nueva pestaña en el navegador 
+     _blank -> crea un documento en blanco
+    */
+  const pestania = window.open("", "_blank");
+
+  /* Si el navegador bloquea ventana emergente (null), alerta al usuario */
+  if (!pestania) {
+    alert(
+      "El navegador bloqueó la pestaña emergente. Debe permitir desde configuración.",
+    );
+    return;
+  }
+
+  /* DOM de la pestaña nueva */
+  const doc = pestania.document;
+
+  /* Accedo al documento, generando nuevas etiquetas sin necesidad de declararlas
+  en variables */
+  doc.title = datoTarjeta.title;
+
+  /* Agregamos una hoja de estilo desde el DOM; manejamos estilos completos para
+  etiquetas específicas desde un "style" */
+  const estilo = doc.createElement("style");
+  estilo.textContent =
+    "body { font-family: Arial, sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem;}" +
+    "h1 { margin-bottom: 0.2rem; color: pink }" +
+    "dt { font-weight: bold; margin-top: 1rem; color: #0000 }" +
+    "dd { margin: 0.2rem 0 0; font-size: 1.1rem }";
+
+  doc.head.appendChild(estilo);
+
+  let titulo = doc.createElement("h1");
+  titulo.textContent = datoTarjeta.titulo;
+
+  doc.body.appendChild(titulo);
+
+  let lista = doc.createElement("dl");
+  let campos = [
+    ["Descripción: ", datoTarjeta.descripcion],
+    ["Año: ", datoTarjeta.anio],
+  ];
+
+  campos.forEach((campo) => {
+    let dt = doc.createElement("dt");
+    dt.textContent = campo[0] || "Sin datos";
+    let dd = doc.createElement("dd");
+    dd.textContent = campo[1] || "Sin datos";
+    //lista.appendChild(dt);
+    //lista.appendChild(dd);
+    lista.append(dt, dd);
+  });
+  doc.body.appendChild(lista);
+
+  let botonCerrar = doc.createElement("button");
+  botonCerrar.textContent = "Cerrar pestaña";
+  botonCerrar.addEventListener("click", () => {
+    pestania.close();
+  });
+  doc.body.appendChild(botonCerrar);
+}
+
+const servicioTarjetas = {
+  crearTarjeta(datos) {
+    let titulo = datos.titulo.trim(); // elimina espacios en blanco
+    let descripcion = datos.descripcion.trim();
+    let anio = Number(datos.anio);
+
+    if (titulo === "" || descripcion === "") {
+      return {
+        ok: false,
+        mensaje: "El título y la descripción son obligatorios.",
+      };
+    }
+
+    if (!Number.isInteger(anio)) {
+      return {
+        ok: false,
+        mensaje: "El año debe ser numérico",
+      };
+    }
+
+    /* Estado: TRUE -> el servicio cumplió su propósito */
+    /* dato: Objeto de TARJETA (parámetros esperados) */
+    return {
+      ok: true,
+      dato: {
+        titulo: titulo,
+        descripcion: descripcion,
+        anio: anio,
+      },
+    };
+  },
+};
+
+let formulario = document.querySelector("#formularioTarjeta"); // ID: querySelector + #id
+let mensaje = document.getElementById("mensaje"); // ID: getElementById + id
+
+formulario.addEventListener("submit", (evento) => {
+    evento.preventDefault(); // -> evitamos recargo de la página
+
+    let resultado = servicioTarjetas.crearTarjeta({
+        // referencia: elemento obtenido desde el HTML + dato (value)
+        titulo: document.getElementById("titulo").value,
+        descripcion: document.getElementById("descripcion").value,
+        anio: document.getElementById("anio").value
+    })
+
+    /* En caso de conflicto en los datos, obtenemos estado "false" y el mensaje que definimos (qué fue lo que falló) */
+    if (!resultado.ok) {
+        mensaje.textContent = resultado.mensaje;
+        return;
+    }
+
+    mensaje.textContent = "";
+    contenedor.appendChild(crearTarjeta(resultado.dato));
+    formulario.reset(); // .reset() -> vacía los inputs
+})
 
 let indice = 0;
 

@@ -61,3 +61,26 @@ button {
 .titulo {
     color: pink;
 }
+
+form {
+    display: grid;
+    gap: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+}
+
+form h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+input {
+    padding: 0.5rem;
+}
+
+#mensaje {
+    margin: 0;
+    color: red;
+}
